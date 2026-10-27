@@ -51,8 +51,10 @@ em imóvel ou projeto individual.
 - **Limites territoriais**: IBGE.
 
 O arquivo `limites.json` inclui as coordenadas, a biomassa medida, o ano e o
-identificador das 4.219 unidades amostrais do IFN usadas na validação de cada
-unidade mapeada. Quem pretenda reutilizar esses pontos deve verificar junto ao
+identificador das 3.657 unidades amostrais do IFN. Elas aparecem no arquivo em
+três listas, uma por unidade mapeada, somando 4.219 registros: as 562 unidades do
+Maranhão repetem-se nas listas dos biomas, porque o estado atravessa Amazônia (163
+unidades) e Cerrado (399). Quem pretenda reutilizar esses pontos deve verificar junto ao
 Serviço Florestal Brasileiro as condições de uso do dado de origem.
 
 ## Autoria
