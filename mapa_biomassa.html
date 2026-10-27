@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Biomassa aérea: Amazônia, Cerrado e Maranhão</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+  /* Painel escuro fixo sobre o mapa: o mapa é o conteúdo, o painel é instrumento. */
+  :root{
+    --tinta:#e8e6e1; --tinta-fraca:#9a968e; --painel:#16181c; --painel-2:#1f2227;
+    --linha:#32363d; --destaque:#5ab4ac;
+    --fonte:"IBM Plex Sans",system-ui,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:var(--fonte);background:#0d0e11;color:var(--tinta)}
+  #mapa{position:absolute;inset:0}
+
+  .painel{
+    position:absolute;top:12px;left:12px;z-index:1000;width:310px;max-width:calc(100vw - 24px);
+    background:var(--painel);border:1px solid var(--linha);border-radius:10px;
+    box-shadow:0 8px 28px rgba(0,0,0,.5);overflow:hidden;
+    max-height:calc(100% - 24px);display:flex;flex-direction:column;
+  }
+  .cab{padding:13px 15px 11px;border-bottom:1px solid var(--linha);background:var(--painel-2);position:relative}
+  .cab h1{margin:0;font-size:14px;font-weight:600;letter-spacing:-.01em;padding-right:28px}
+  .cab p{margin:4px 0 0;font-size:11.5px;line-height:1.45;color:var(--tinta-fraca)}
+  .dobra{position:absolute;top:10px;right:11px;width:22px;height:22px;line-height:1;
+    background:transparent;border:1px solid var(--linha);border-radius:5px;color:var(--tinta-fraca);
+    font:600 14px var(--mono);cursor:pointer}
+  .dobra:hover{color:var(--tinta);border-color:var(--tinta-fraca)}
+  .dobra:focus-visible{outline:2px solid var(--destaque);outline-offset:1px}
+
+  .corpo{padding:13px 15px 15px;overflow-y:auto;display:flex;flex-direction:column;gap:14px}
+  .grupo{display:flex;flex-direction:column;gap:7px}
+  .rotulo{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--tinta-fraca)}
+
+  .abas{display:flex;border:1px solid var(--linha);border-radius:7px;overflow:hidden}
+  .abas button{
+    flex:1;padding:8px 4px;font:500 11.5px var(--fonte);color:var(--tinta-fraca);
+    background:transparent;border:0;cursor:pointer;transition:background .12s,color .12s;
+  }
+  .abas button+button{border-left:1px solid var(--linha)}
+  .abas button[aria-pressed="true"]{background:var(--destaque);color:#0d0e11;font-weight:600}
+  .abas button:focus-visible{outline:2px solid var(--destaque);outline-offset:-2px}
+
+  input[type=range]{width:100%;accent-color:var(--destaque);margin:0}
+  .linha{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .valor{font:500 11.5px var(--mono);color:var(--tinta)}
+
+  .check{display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;user-select:none}
+  .check input{accent-color:var(--destaque);width:15px;height:15px;cursor:pointer;margin:0}
+
+  .barra{height:11px;border-radius:3px;border:1px solid var(--linha)}
+  .escala{display:flex;justify-content:space-between;font:500 10px var(--mono);color:var(--tinta-fraca);margin-top:3px}
+
+  .nums{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:0}
+  .nums .num:last-child{grid-column:1/-1}
+  .num{background:var(--painel-2);border:1px solid var(--linha);border-radius:7px;padding:8px 9px}
+  .num dt{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--tinta-fraca);margin:0}
+  .num dd{margin:3px 0 0;font:600 15px var(--mono);font-variant-numeric:tabular-nums}
+  .num dd span{font-size:10px;font-weight:400;color:var(--tinta-fraca)}
+
+  .nota{font-size:10.5px;line-height:1.5;color:var(--tinta-fraca);border-top:1px solid var(--linha);padding-top:11px;margin:0}
+  .nota b{color:var(--tinta);font-weight:500}
+
+  .leaflet-popup-content-wrapper{background:var(--painel);color:var(--tinta);border-radius:7px;border:1px solid var(--linha)}
+  .leaflet-popup-tip{background:var(--painel);border:1px solid var(--linha)}
+  .leaflet-popup-content{margin:9px 11px;font:400 11.5px/1.5 var(--fonte)}
+  .leaflet-container{background:#0d0e11}
+  .leaflet-control-attribution{font-size:9px;background:rgba(22,24,28,.85);color:var(--tinta-fraca)}
+  .leaflet-control-attribution a{color:var(--tinta-fraca)}
+
+  @media (max-width:600px){ .painel{width:auto;right:12px;max-height:50%} }
+
+  /* Legenda de classes: cada linha e uma classe, com o vies medido daquela
+     classe na propria unidade. E o que torna o mapa auditavel contra a tabela. */
+  .classes{display:flex;flex-direction:column;gap:2px}
+  .cls{display:grid;grid-template-columns:14px 1fr auto;align-items:center;gap:8px;
+    font:400 11px var(--fonte);padding:1px 0}
+  .cls i{width:14px;height:11px;border-radius:2px;display:block}
+  .cls .faixa{color:var(--tinta)}
+  .cls .vs{font:500 10.5px var(--mono);color:var(--tinta-fraca);font-variant-numeric:tabular-nums}
+  .cab-cls{display:grid;grid-template-columns:14px 1fr auto;gap:8px;
+    font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--tinta-fraca);
+    padding-bottom:3px;border-bottom:1px solid var(--linha);margin-bottom:3px}
+  .cab-cls span:last-child{text-align:right}
+</style>
+</head>
+<body>
+</head>
+<body>
+
+<div id="mapa"></div>
+
+<section class="painel" aria-label="Controles do mapa">
+  <div class="cab">
+    <button class="dobra" id="dobra" aria-expanded="true" aria-controls="corpo"
+            title="Recolher painel">−</button>
+    <h1>Biomassa aérea estimada</h1>
+    <p>Modelo calibrado com 3.657 unidades amostrais do IFN. Escala de classes
+       compartilhada pelas três unidades.</p>
+  </div>
+
+  <div class="corpo" id="corpo">
+    <div class="grupo">
+      <span class="rotulo" id="r-unid">Unidade</span>
+      <div class="abas" role="group" aria-labelledby="r-unid">
+        <button type="button" data-unid="am" aria-pressed="true">Amazônia</button>
+        <button type="button" data-unid="ce" aria-pressed="false">Cerrado</button>
+        <button type="button" data-unid="ma" aria-pressed="false">Maranhão</button>
+      </div>
+    </div>
+
+    <div class="grupo">
+      <span class="rotulo" id="r-camada">Camada</span>
+      <div class="abas" role="group" aria-labelledby="r-camada">
+        <button type="button" data-camada="agb" aria-pressed="true">Biomassa</button>
+        <button type="button" data-camada="inc" aria-pressed="false">Incerteza</button>
+        <button type="button" data-camada="aus" aria-pressed="false">Procedência</button>
+      </div>
+    </div>
+
+    <div class="grupo">
+      <div class="linha">
+        <span class="rotulo">Opacidade</span>
+        <span class="valor" id="v-op">85%</span>
+      </div>
+      <input type="range" id="op" min="0" max="100" value="85" aria-label="Opacidade da camada">
+    </div>
+
+    <div class="grupo">
+      <span class="rotulo" id="r-esc">Classes (t ha⁻¹)</span>
+      <div id="legenda" aria-labelledby="r-esc"></div>
+    </div>
+
+    <label class="check">
+      <input type="checkbox" id="c-uas">
+      Unidades amostrais do IFN <span class="valor" id="n-uas"></span>
+    </label>
+
+    <dl class="nums">
+      <div class="num"><dt>Campo, mediana</dt><dd id="n-med">—<span> t ha⁻¹</span></dd></div>
+      <div class="num"><dt>Cobertura</dt><dd id="n-cob">—<span>%</span></dd></div>
+      <div class="num"><dt>R² contra o IFN</dt><dd id="n-r2">—</dd></div>
+      <div class="num"><dt>Erro mediano</dt><dd id="n-erro">—<span> t ha⁻¹</span></dd></div>
+    </dl>
+
+    <p class="nota" id="nota"></p>
+  </div>
+</section>
+
+<script>
+(function(){
+  "use strict";
+
+  var mapa = L.map("mapa", {zoomControl:true, preferCanvas:true}).setView([-8,-55], 4);
+  L.control.scale({imperial:false}).addTo(mapa);
+
+  // O Leaflet mede o contêiner ao inicializar. Quando a página abre num painel
+  // que ainda está sendo dimensionado, a medida sai errada e o mapa aparece
+  // desenquadrado até a primeira recarga. invalidateSize corrige a medida; o
+  // reenquadre devolve a vista à unidade em exibição.
+  function remedir(){
+    mapa.invalidateSize();
+    var c = camadas[unidade + "_" + tipo];
+    if (c) mapa.fitBounds(c.getBounds(), {padding:[18,18]});
+  }
+  window.addEventListener("load", function(){ setTimeout(remedir, 120); });
+  window.addEventListener("resize", remedir);
+  if (window.ResizeObserver){
+    new ResizeObserver(function(){ mapa.invalidateSize(); })
+      .observe(document.getElementById("mapa"));
+  }
+
+  // Esri nos tres: o CARTO passou a exigir chave de API e devolve o tile com
+  // marca d'agua "API KEY REQUIRED" sob HTTP 200, o que nao aparece como erro.
+  var esri = "https://server.arcgisonline.com/ArcGIS/rest/services/";
+  var bases = {
+    "Escuro": L.tileLayer(esri+"Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+      {maxZoom:16, attribution:'Esri, HERE, Garmin, &copy; OpenStreetMap'}),
+    "Claro": L.tileLayer(esri+"Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+      {maxZoom:16, attribution:'Esri, HERE, Garmin, &copy; OpenStreetMap'}),
+    "Satélite": L.tileLayer(esri+"World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      {maxZoom:19, attribution:'Esri, Maxar, Earthstar Geographics'})
+  };
+  bases["Escuro"].addTo(mapa);
+  L.control.layers(bases, null, {position:"topright"}).addTo(mapa);
+
+  var meta=null, camadas={}, marcadores=null;
+  var unidade="am", tipo="agb";
+
+  function el(id){ return document.getElementById(id); }
+
+  function pintaLegenda(){
+    var cls = meta.classes[tipo];
+    el("r-esc").textContent = (tipo==="aus") ? "Variáveis imputadas"
+                                             : "Classes (t ha⁻¹)";
+    var vies = (tipo==="agb") ? meta.vies[unidade] : null;
+    var h = '<div class="cab-cls"><span></span><span>Faixa</span><span>'
+          + (vies ? "Viés" : "") + '</span></div><div class="classes">';
+    for (var i=0;i<cls.length;i++){
+      h += '<div class="cls"><i style="background:'+cls[i].cor+'"></i>'
+         + '<span class="faixa">'+cls[i].rotulo+'</span>'
+         + '<span class="vs">'+(vies ? vies[i] : "")+'</span></div>';
+    }
+    el("legenda").innerHTML = h + '</div>';
+  }
+
+  function resumoDe(u){
+    var tag = (meta.unidades[u] || {}).tag;
+    for (var i=0;i<meta.resumo.length;i++){
+      if (meta.resumo[i].unidade === tag) return meta.resumo[i];
+    }
+    return null;
+  }
+
+  function mostra(){
+    Object.keys(camadas).forEach(function(k){
+      if (mapa.hasLayer(camadas[k])) mapa.removeLayer(camadas[k]);
+    });
+    var chave = unidade+"_"+tipo;
+    if (camadas[chave]){
+      camadas[chave].addTo(mapa).setOpacity(el("op").value/100);
+      mapa.fitBounds(camadas[chave].getBounds(), {padding:[18,18]});
+    }
+    pintaLegenda();
+
+    var r = resumoDe(unidade);
+    if (r){
+      el("n-med").innerHTML = r.campo_mediana.toString().replace(".",",")+'<span> t ha⁻¹</span>';
+      el("n-cob").innerHTML = r.cobertura_pct.toString().replace(".",",")+'<span>%</span>';
+      el("n-r2").textContent = r.r2.toFixed(3).replace(".",",");
+      el("n-erro").innerHTML = r.erro_mediano.toString().replace(".",",")+'<span> t ha⁻¹</span>';
+    }
+    var nomes={am:"Amazônia",ce:"Cerrado",ma:"Maranhão"};
+    var nota = "<b>"+nomes[unidade]+"</b>, "+meta.unidades[unidade].escala_m+" m. ";
+    if (tipo==="agb"){
+      nota += "O viés ao lado de cada classe foi medido contra as UAs do IFN desta "
+            + "unidade. O viés agregado é próximo de zero por cancelamento entre as "
+            + "classes baixas, que o modelo infla, e as altas, que achata: não deve "
+            + "ser lido como acurácia.";
+    } else if (tipo==="inc"){
+      nota += "Amplitude entre os percentis 10 e 90 das 300 árvores. É intervalo de "
+            + "referência, não de confiança, e subestima o erro observado.";
+    } else {
+      var pc = meta.unidades[unidade].imputado_pct;
+      nota += "Quantas das 18 variáveis foram imputadas pela mediana do bioma em cada "
+            + "pixel, como no treino. Cinza é dado completo"
+            + (pc!==undefined ? " ("+(100-pc).toFixed(2).replace(".",",")+"% da área)" : "")
+            + ". Sobre as 352 unidades amostrais com imputação nas três unidades, e "
+            + "controlando pela faixa de biomassa, o pixel imputado erra mais em seis "
+            + "das sete faixas, com diferença mediana de cerca de 9 t ha⁻¹, mas "
+            + "nenhuma faixa atinge significância e uma inverte o sinal. A penalidade, "
+            + "se existe, é pequena diante da dispersão. O teto de 7 é o máximo de "
+            + "ausências observado em unidade amostral de treino, e permanece como "
+            + "precaução, sem verificação empírica.";
+    }
+    el("nota").innerHTML = nota;
+    desenhaUAs();
+  }
+
+  function desenhaUAs(){
+    if (marcadores){ mapa.removeLayer(marcadores); marcadores=null; }
+    if (!el("c-uas").checked) return;
+    var lista = meta.uas[unidade] || [];
+    marcadores = L.layerGroup();
+    lista.forEach(function(u){
+      L.circleMarker([u.lat,u.lon], {radius:3, weight:1, color:"#e8e6e1",
+        fillColor:"#5ab4ac", fillOpacity:.85})
+        .bindPopup("<b>"+u.ua+"</b><br>"+u.bioma+", "+u.ano
+                 + "<br>AGB de campo: "+String(u.agb).replace(".",",")+" t ha⁻¹")
+        .addTo(marcadores);
+    });
+    marcadores.addTo(mapa);
+    el("n-uas").textContent = "("+lista.length+")";
+  }
+
+  // Contorno de cache: sem ele o navegador reusa o limites.json anterior e a
+  // pagina exibe metricas de uma versao do mapa que nao e a que esta na tela.
+  // Foi o que aconteceu ao regerar os mapas com a logica de imputacao.
+  fetch("limites.json?v=" + Date.now(), {cache: "no-store"})
+    .then(function(r){return r.json();}).then(function(m){
+    meta = m;
+    if (!meta.resumo) meta.resumo = [];
+    Object.keys(meta.camadas).forEach(function(k){
+      var c = meta.camadas[k];
+      camadas[k] = L.imageOverlay(c.arquivo, c.bounds, {opacity:0.85, interactive:false});
+    });
+    mostra();
+  });
+
+  // --- eventos: delegacao por atributo de dado, nao por id ---
+  document.querySelectorAll("[data-unid]").forEach(function(b){
+    b.addEventListener("click", function(){
+      document.querySelectorAll("[data-unid]").forEach(function(o){
+        o.setAttribute("aria-pressed", String(o===b));
+      });
+      unidade = b.getAttribute("data-unid");
+      mostra();
+    });
+  });
+  document.querySelectorAll("[data-camada]").forEach(function(b){
+    b.addEventListener("click", function(){
+      document.querySelectorAll("[data-camada]").forEach(function(o){
+        o.setAttribute("aria-pressed", String(o===b));
+      });
+      tipo = b.getAttribute("data-camada");
+      mostra();
+    });
+  });
+  el("op").addEventListener("input", function(){
+    el("v-op").textContent = this.value+"%";
+    var c = camadas[unidade+"_"+tipo];
+    if (c) c.setOpacity(this.value/100);
+  });
+  el("c-uas").addEventListener("change", desenhaUAs);
+  el("dobra").addEventListener("click", function(){
+    var aberto = this.getAttribute("aria-expanded")==="true";
+    this.setAttribute("aria-expanded", String(!aberto));
+    el("corpo").hidden = aberto;
+    this.textContent = aberto ? "+" : "−";
+    this.title = aberto ? "Expandir painel" : "Recolher painel";
+  });
+})();
+</script>
+</body>
+</html>
