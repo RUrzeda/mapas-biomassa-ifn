@@ -86,6 +86,26 @@
   .cls i{width:14px;height:11px;border-radius:2px;display:block}
   .cls .faixa{color:var(--tinta)}
   .cls .vs{font:500 10.5px var(--mono);color:var(--tinta-fraca);font-variant-numeric:tabular-nums}
+  /* Recortes: atalhos para as feições que o texto descreve e que ninguém
+     encontraria navegando o mapa inteiro. */
+  .recortes{display:flex;flex-wrap:wrap;gap:5px}
+  .recortes button{
+    flex:1 1 auto;padding:6px 8px;font:500 11px var(--fonte);color:var(--tinta);
+    background:var(--painel-2);border:1px solid var(--linha);border-radius:6px;
+    cursor:pointer;text-align:left;transition:border-color .12s,color .12s}
+  .recortes button:hover{border-color:var(--destaque);color:#fff}
+  .recortes button:focus-visible{outline:2px solid var(--destaque);outline-offset:1px}
+  .achado{font-size:10.5px;line-height:1.5;color:var(--tinta-fraca);
+    border-left:2px solid var(--destaque);padding:2px 0 2px 8px;margin-top:2px}
+  /* Gráfico de viés por faixa: barras divergentes a partir do zero. */
+  .gv{display:flex;flex-direction:column;gap:2px}
+  .gv-l{display:grid;grid-template-columns:52px 1fr 42px;align-items:center;gap:6px;
+    font:400 10px var(--fonte);color:var(--tinta-fraca)}
+  .gv-b{position:relative;height:11px;background:var(--painel-2);border-radius:2px}
+  .gv-b i{position:absolute;top:0;height:11px;border-radius:2px;display:block}
+  .gv-z{position:absolute;top:-2px;bottom:-2px;width:1px;background:var(--linha)}
+  .gv-n{font:500 10px var(--mono);color:var(--tinta);text-align:right;
+    font-variant-numeric:tabular-nums}
   .cab-cls{display:grid;grid-template-columns:14px 1fr auto;gap:8px;
     font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--tinta-fraca);
     padding-bottom:3px;border-bottom:1px solid var(--linha);margin-bottom:3px}
@@ -137,6 +157,19 @@
     <div class="grupo">
       <span class="rotulo" id="r-esc">Classes (t ha⁻¹)</span>
       <div id="legenda" aria-labelledby="r-esc"></div>
+    </div>
+
+    <div class="grupo" id="g-recortes" hidden>
+      <span class="rotulo">O que procurar</span>
+      <div class="recortes" id="recortes"></div>
+      <p class="achado" id="achado" hidden></p>
+    </div>
+
+    <div class="grupo">
+      <span class="rotulo">Viés por faixa de biomassa (t ha⁻¹)</span>
+      <div class="gv" id="grafico"></div>
+      <p class="achado">O viés agregado é próximo de zero por cancelamento entre
+        estas faixas. Não deve ser lido como acurácia.</p>
     </div>
 
     <label class="check">
@@ -197,6 +230,54 @@
 
   function el(id){ return document.getElementById(id); }
 
+  // --- recortes: leva a vista para a feição e troca a camada que a revela ---
+  function pintaRecortes(){
+    var lista = (meta.recortes || {})[unidade] || [];
+    el("g-recortes").hidden = lista.length === 0;
+    el("achado").hidden = true;
+    var h = "";
+    lista.forEach(function(r, i){
+      h += '<button type="button" data-rec="'+i+'">'+r.rot+'</button>';
+    });
+    el("recortes").innerHTML = h;
+    el("recortes").querySelectorAll("[data-rec]").forEach(function(b){
+      b.addEventListener("click", function(){
+        var r = lista[+b.getAttribute("data-rec")];
+        if (r.camada && r.camada !== tipo){
+          tipo = r.camada;
+          document.querySelectorAll("[data-camada]").forEach(function(o){
+            o.setAttribute("aria-pressed",
+              String(o.getAttribute("data-camada") === tipo));
+          });
+          mostra(true);
+        }
+        mapa.flyTo([r.lat, r.lon], r.z, {duration: 1.1});
+        el("achado").textContent = r.nota;
+        el("achado").hidden = false;
+      });
+    });
+  }
+
+  // --- gráfico de viés por faixa: barras divergentes a partir do zero ---
+  function pintaGrafico(){
+    var d = (meta.vies_faixa || {})[unidade] || [];
+    if (!d.length){ el("grafico").innerHTML = ""; return; }
+    var mx = Math.max.apply(null, d.map(function(x){ return Math.abs(x.vies); }));
+    var h = "";
+    d.forEach(function(x){
+      var fr = Math.abs(x.vies) / mx * 50;           // metade da largura
+      var pos = x.vies >= 0;
+      var cor = pos ? "#d98f4a" : "#5a8fd6";          // infla / achata
+      h += '<div class="gv-l"><span>'+x.faixa+'</span>'
+         + '<span class="gv-b"><span class="gv-z" style="left:50%"></span>'
+         + '<i style="background:'+cor+';'
+         + (pos ? "left:50%;" : "right:50%;") + 'width:'+fr.toFixed(1)+'%"></i></span>'
+         + '<span class="gv-n">'+(pos?"+":"\u2212")
+         + Math.abs(x.vies).toFixed(1).replace(".",",")+'</span></div>';
+    });
+    el("grafico").innerHTML = h;
+  }
+
   function pintaLegenda(){
     var cls = meta.classes[tipo];
     el("r-esc").textContent = (tipo==="aus") ? "Variáveis imputadas"
@@ -220,14 +301,14 @@
     return null;
   }
 
-  function mostra(){
+  function mostra(semEnquadrar){
     Object.keys(camadas).forEach(function(k){
       if (mapa.hasLayer(camadas[k])) mapa.removeLayer(camadas[k]);
     });
     var chave = unidade+"_"+tipo;
     if (camadas[chave]){
       camadas[chave].addTo(mapa).setOpacity(el("op").value/100);
-      mapa.fitBounds(camadas[chave].getBounds(), {padding:[18,18]});
+      if (!semEnquadrar) mapa.fitBounds(camadas[chave].getBounds(), {padding:[18,18]});
     }
     pintaLegenda();
 
@@ -262,6 +343,8 @@
             + "precaução, sem verificação empírica.";
     }
     el("nota").innerHTML = nota;
+    pintaRecortes();
+    pintaGrafico();
     desenhaUAs();
   }
 

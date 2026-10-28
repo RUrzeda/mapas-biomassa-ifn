@@ -43,6 +43,21 @@ Pastagem e agricultura permanecem mapeadas, embora também estejam fora do domí
 de treino. Ali o modelo atribui valores baixos e plausíveis: de 28 a 30 t ha⁻¹ de
 mediana na Amazônia, contra 224 da vegetação nativa.
 
+## O que procurar
+
+O painel traz atalhos para as feições que o texto descreve e que dificilmente
+seriam encontradas navegando o mapa inteiro. Cada atalho troca para a camada que
+revela a feição e explica o que se vê:
+
+- **Amazônia, emenda de órbita** — faixa diagonal onde faltam as duas variáveis do
+  PALSAR, reconstruídas pela mediana do bioma.
+- **Amazônia, arco de desmatamento** — transição abrupta de floresta para
+  pastagem, que o modelo separa apesar de nunca ter visto pastagem no treino.
+- **Cerrado, bolsão de alta biomassa** — um dos poucos trechos acima de 112 t/ha,
+  e também onde o mapa mais subestima.
+- **Maranhão, biomassa alta e confiança baixa** — a mancha de maior estoque
+  coincide com a de maior incerteza.
+
 ## Como ler estes mapas
 
 O viés agregado de cada mapa é próximo de zero, **e isso não indica acurácia**.

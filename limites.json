@@ -34174,5 +34174,128 @@
    "banda_mediana": 66.9,
    "dentro_da_banda_pct": 90
   }
- ]
+ ],
+ "vies_faixa": {
+  "am": [
+   {
+    "faixa": "0–10",
+    "vies": 34.6,
+    "n": 109
+   },
+   {
+    "faixa": "10–25",
+    "vies": 36.8,
+    "n": 80
+   },
+   {
+    "faixa": "25–50",
+    "vies": 28.9,
+    "n": 79
+   },
+   {
+    "faixa": "50–100",
+    "vies": 36.8,
+    "n": 126
+   },
+   {
+    "faixa": "acima de 100",
+    "vies": -7.4,
+    "n": 811
+   }
+  ],
+  "ce": [
+   {
+    "faixa": "0–10",
+    "vies": 17.0,
+    "n": 689
+   },
+   {
+    "faixa": "10–25",
+    "vies": 14.3,
+    "n": 673
+   },
+   {
+    "faixa": "25–50",
+    "vies": 5.6,
+    "n": 522
+   },
+   {
+    "faixa": "50–100",
+    "vies": -12.1,
+    "n": 384
+   },
+   {
+    "faixa": "acima de 100",
+    "vies": -69.3,
+    "n": 167
+   }
+  ],
+  "ma": [
+   {
+    "faixa": "0–10",
+    "vies": 20.0,
+    "n": 177
+   },
+   {
+    "faixa": "10–25",
+    "vies": 18.6,
+    "n": 167
+   },
+   {
+    "faixa": "25–50",
+    "vies": 15.0,
+    "n": 126
+   },
+   {
+    "faixa": "50–100",
+    "vies": -3.2,
+    "n": 70
+   },
+   {
+    "faixa": "acima de 100",
+    "vies": -27.6,
+    "n": 20
+   }
+  ]
+ },
+ "recortes": {
+  "am": [
+   {
+    "rot": "Emenda de órbita",
+    "lat": -4.765,
+    "lon": -62.944,
+    "z": 8,
+    "camada": "aus",
+    "nota": "Faixa diagonal onde faltam as duas variáveis do PALSAR. O mosaico ALOS deixa emendas entre órbitas, e ali o pixel é reconstruído pela mediana do bioma."
+   },
+   {
+    "rot": "Arco de desmatamento",
+    "lat": -9.2,
+    "lon": -56.4,
+    "z": 7,
+    "camada": "agb",
+    "nota": "Transição abrupta de floresta para pastagem no sudeste do bioma. O modelo separa as duas apesar de nunca ter visto pastagem no treino."
+   }
+  ],
+  "ce": [
+   {
+    "rot": "Bolsão de alta biomassa",
+    "lat": -23.279,
+    "lon": -48.548,
+    "z": 9,
+    "camada": "agb",
+    "nota": "Um dos poucos trechos do Cerrado acima de 112 t/ha, na transição com a Mata Atlântica. É também onde o mapa mais subestima: o viés na faixa acima de 100 é de −69 t/ha."
+   }
+  ],
+  "ma": [
+   {
+    "rot": "Biomassa alta, confiança baixa",
+    "lat": -2.861,
+    "lon": -46.285,
+    "z": 9,
+    "camada": "inc",
+    "nota": "A mancha de maior estoque coincide com a de maior incerteza. Troque para Biomassa e compare: onde o mapa indica mais carbono é onde ele menos sabe."
+   }
+  ]
+ }
 }
