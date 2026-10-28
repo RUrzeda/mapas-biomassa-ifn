@@ -97,20 +97,20 @@
   "ma": {
    "rotulo": "Maranhão",
    "escala_m": 100,
-   "tag": "maranhão_100m_completo_imput",
-   "imputado_pct": 1.35
+   "tag": "maranhão_100m_completo_imput_agua",
+   "imputado_pct": 0.51
   },
   "ce": {
    "rotulo": "Cerrado",
    "escala_m": 250,
-   "tag": "cerrado_250m_completo_imput",
-   "imputado_pct": 7.14
+   "tag": "cerrado_250m_completo_imput_agua",
+   "imputado_pct": 6.76
   },
   "am": {
    "rotulo": "Amazônia",
    "escala_m": 250,
-   "tag": "amazônia_250m_completo_imput",
-   "imputado_pct": 21.84
+   "tag": "amazônia_250m_completo_imput_agua",
+   "imputado_pct": 20.38
   }
  },
  "camadas": {
@@ -128,7 +128,7 @@
      -41.71237190280586
     ]
    ],
-   "validos_pct": 40.1
+   "validos_pct": 39.9
   },
   "ma_inc": {
    "arquivo": "ma_inc.png",
@@ -144,7 +144,7 @@
      -41.71237190280586
     ]
    ],
-   "validos_pct": 40.1
+   "validos_pct": 39.9
   },
   "ma_aus": {
    "arquivo": "ma_aus.png",
@@ -160,7 +160,7 @@
      -41.71237190280586
     ]
    ],
-   "validos_pct": 39.9
+   "validos_pct": 39.4
   },
   "ce_agb": {
    "arquivo": "ce_agb.png",
@@ -208,7 +208,7 @@
      -40.350076774438605
     ]
    ],
-   "validos_pct": 36.6
+   "validos_pct": 36.3
   },
   "am_agb": {
    "arquivo": "am_agb.png",
@@ -224,7 +224,7 @@
      -42.54196606769025
     ]
    ],
-   "validos_pct": 48.7
+   "validos_pct": 48.4
   },
   "am_inc": {
    "arquivo": "am_inc.png",
@@ -240,7 +240,7 @@
      -42.54196606769025
     ]
    ],
-   "validos_pct": 48.7
+   "validos_pct": 48.4
   },
   "am_aus": {
    "arquivo": "am_aus.png",
@@ -256,7 +256,7 @@
      -42.54196606769025
     ]
    ],
-   "validos_pct": 48.4
+   "validos_pct": 47.2
   }
  },
  "uas": {
@@ -34049,6 +34049,20 @@
    "dentro_da_banda_pct": 81
   },
   {
+   "unidade": "amazônia_250m_completo_imput_agua",
+   "n_uas": 1215,
+   "n_validas": 1205,
+   "cobertura_pct": 99.2,
+   "r2": 0.558,
+   "rmse": 86.7,
+   "vies": 6.3,
+   "campo_mediana": 167.8,
+   "compressao": 0.794,
+   "erro_mediano": 43.0,
+   "banda_mediana": 193.9,
+   "dentro_da_banda_pct": 81
+  },
+  {
    "unidade": "cerrado_250m_completo",
    "n_uas": 2442,
    "n_validas": 2293,
@@ -34071,6 +34085,20 @@
    "rmse": 32.7,
    "vies": 3.3,
    "campo_mediana": 21.4,
+   "compressao": 0.688,
+   "erro_mediano": 14.3,
+   "banda_mediana": 54.2,
+   "dentro_da_banda_pct": 84
+  },
+  {
+   "unidade": "cerrado_250m_completo_imput_agua",
+   "n_uas": 2442,
+   "n_validas": 2435,
+   "cobertura_pct": 99.7,
+   "r2": 0.303,
+   "rmse": 32.7,
+   "vies": 3.3,
+   "campo_mediana": 21.3,
    "compressao": 0.688,
    "erro_mediano": 14.3,
    "banda_mediana": 54.2,
@@ -34117,6 +34145,20 @@
    "erro_mediano": 15.7,
    "banda_mediana": 64.1,
    "dentro_da_banda_pct": 90
+  },
+  {
+   "unidade": "maranhão_100m_completo_imput_agua",
+   "n_uas": 562,
+   "n_validas": 560,
+   "cobertura_pct": 99.6,
+   "r2": 0.211,
+   "rmse": 27.7,
+   "vies": 13.8,
+   "campo_mediana": 19.5,
+   "compressao": 0.947,
+   "erro_mediano": 15.7,
+   "banda_mediana": 63.8,
+   "dentro_da_banda_pct": 91
   },
   {
    "unidade": "maranhão_100m_sem_eth_gedi",

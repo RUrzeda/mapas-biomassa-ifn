@@ -29,6 +29,20 @@ dentro de cada unidade mapeada.
   imputação, contra 7,1% no Cerrado e 1,4% no Maranhão; as faixas diagonais
   correspondem a emendas entre órbitas do mosaico ALOS/PALSAR.
 
+## Máscara de água
+
+Corpos d'água foram removidos pela coleção 9 do MapBiomas, classes 33 e 31, na
+mesma época dos mapas. O modelo foi calibrado apenas sobre vegetação nativa e não
+viu um único pixel de água no treino. Sem a máscara, a água amazônica recebia
+mediana de 235,8 t ha⁻¹, mais que a floresta ao redor: os produtos de altura de
+dossel mascaram superfície líquida e o pixel herdava a mediana estrutural do
+bioma. A remoção eliminou 2,33 Pg de biomassa inexistente, cerca de 1,10 Pg de
+carbono, concentrados no leito dos rios amazônicos.
+
+Pastagem e agricultura permanecem mapeadas, embora também estejam fora do domínio
+de treino. Ali o modelo atribui valores baixos e plausíveis: de 28 a 30 t ha⁻¹ de
+mediana na Amazônia, contra 224 da vegetação nativa.
+
 ## Como ler estes mapas
 
 O viés agregado de cada mapa é próximo de zero, **e isso não indica acurácia**.
